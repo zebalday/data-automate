@@ -26,6 +26,22 @@ def getDataframeLayout(
         cols : int = 3
     ) -> tuple:
    
+    """
+    Support Method
+    --------------
+    Returns dataframe layout for plot visualization. Takes an initial
+    column value of 3.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame object.
+    cols : int.
+        Number of desired columns for the layout. Default value = 3.
+
+    Returns
+    -------
+    Tuple (rows, cols).
+    """
     rows = round((len(df.columns) / cols), 0) + 1
     layout = (int(rows), cols)
 
@@ -37,6 +53,20 @@ def getDataframeLayout(
 def getScaledDataframe(
         df : DataFrame,
     ) -> DataFrame:
+
+    """
+    Support Method
+    --------------
+    Returns provided dataframe with scaled values between range (0, 1).
+
+    Parameters
+    ----------
+    df : pandas.DataFrame object.
+
+    Returns
+    -------
+    pandas.DataFrame object.
+    """
 
     scaler = MinMaxScaler(feature_range = (0,1))
     scaled_data = scaler.fit_transform(df)
@@ -54,10 +84,12 @@ def pltScaledData(
     """ 
     Visualization Method
     --------------------
+    Displays histrogram plots of provided dataframe columns with scaled
+    data. Used library: Matplotlib.
 
     Parameters
     ----------
-
+    df : pandas.DataFrame object.
     """
 
     scaled_df = getScaledDataframe(df)
@@ -83,6 +115,17 @@ def snsScaledData(
         df : DataFrame,
     ) -> None:
    
+    """ 
+    Visualization Method
+    --------------------
+    Displays histrogram plots of provided dataframe columns with scaled
+    data. Used library: Seaborn.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame object.
+    """
+
     scaled_df = getScaledDataframe(df)
 
     df_len = len(scaled_df.columns)  
@@ -100,3 +143,9 @@ def snsScaledData(
             if count == (df_len - 1):
                 break
             count += 1
+
+
+# --------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------

@@ -150,11 +150,47 @@ def rmNullRecords(
 
 # --------------------------------------------------------------------
 
-def rplcNull(
-        df : DataFrame,
+def rplcNullToMean(
+        df : DataFrame,        
+    ) -> DataFrame:
+    
+    for col in df.columns:
+        if df[col].dtype in ('int64', 'float64'):
+            mean = df[col].mean()
+            indexes = df[col][df[col].isnull()].index.tolist()
+            df.loc[indexes, col] = mean
 
-    ):
-    pass
+    return df        
+
+
+# --------------------------------------------------------------------
+
+def rplcNullToMedian(
+        df : DataFrame,        
+    ) -> DataFrame:
+    
+    for col in df.columns:
+        if df[col].dtype in ('int64', 'float64'):
+            median = df[col].median()
+            indexes = df[col][df[col].isnull()].index.tolist()
+            df.loc[indexes, col] = median
+
+    return df        
+
+
+# --------------------------------------------------------------------
+
+def rplcNullToMode(
+        df : DataFrame,        
+    ) -> DataFrame:
+    
+    for col in df.columns:
+        if df[col].dtype in ('int64', 'float64'):
+            mode = df[col].mode()
+            indexes = df[col][df[col].isnull()].index.tolist()
+            df.loc[indexes, col] = mode
+
+    return df        
 
 
 # --------------------------------------------------------------------
