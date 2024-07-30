@@ -1,12 +1,16 @@
 import pandas as pd
 import numpy as np
-from pandas import (DataFrame,)
+from pandas import (
+    DataFrame,
+    Series
+    )
 
 
 """ 
 This is a collection of popular data science methods used in the data 
 preprocessing & processing stage.
 """
+
 
 # --------------------------------------------------------------------
 
@@ -195,6 +199,29 @@ def rplcNullToMode(
 
 # --------------------------------------------------------------------
 
+def getOutlierIndexes(
+        sr : Series,
+        z : int = 2,
+    ) -> tuple:
+
+    mean = sr.mean()
+    std = sr.std()
+    indexes = []
+
+    for record in sr:
+        z_index = (record - mean) / std
+
+        if abs(z_index) > z:
+            index_values = sr.loc[sr == record].index.tolist()
+            indexes += index_values
+    
+    indexes = tuple(set(indexes))
+    
+    return indexes
+
+
+# --------------------------------------------------------------------
+
 def rmOutliers(
         df: DataFrame, 
         z: int = 2, 
@@ -225,22 +252,20 @@ def rmOutliers(
     Copy of the provided DataFrame with deleted rows.
     """
 
-    num_columns = [col for col in df.columns 
-                   if df[col].dtype in ('int64','float64')]
-    new_df = df[num_columns]
-
     indexes = []
 
-    for column in new_df:
-        mean = new_df[column].mean()
-        std = new_df[column].std()
+    for col in df.columns:
 
-        for record in new_df[column]:
-            z_index = (record - mean) / std
+        if df[col].dtype in ('int64', 'float64'):
+            mean = df[col].mean()
+            std = df[col].std()
 
-            if abs(z_index) > z:            
-                values_index = (df[column][df[column] == record].index.tolist())
-                indexes += values_index
+            for record in df[col]:
+                z_index = (record - mean) / std
+
+                if abs(z_index) > z:            
+                    values_index = (df[col][df[col] == record].index.tolist())
+                    indexes += values_index
 
     indexes = set(indexes)
     outliers_percentage = (len(indexes) * 100) / df.shape[0]
@@ -258,11 +283,28 @@ def rmOutliers(
             return df
     
     df = df.drop(indexes)
+
     return df
 
 
 # --------------------------------------------------------------------
 
-def rplcOutliers():
-    pass
+def rplcOutlierToMean(
+        df : DataFrame,
+        z : int = 2    
+    ) -> DataFrame:
 
+
+    for col in df.columns:
+
+        if df[col].dtype in ('int64', 'float64'):
+            mean = df[col].mean()
+            df[col] = df[col].astype('float64')
+
+            indexes = getOutlierIndexes(df[col], z = z)
+            df.loc[indexes, col] = mean
+    
+    return df
+
+
+# --------------------------------------------------------------------
