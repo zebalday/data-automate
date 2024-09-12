@@ -11,13 +11,19 @@ This is a collection of popular data science methods used in the data
 preprocessing & processing stage.
 """
 
+""" 
+==================
+    NULL VALUES
+==================
+"""
 
 # --------------------------------------------------------------------
 
 def getNullInfo(
         df : DataFrame,
         to_df : bool = False        
-    ) -> DataFrame:
+    ) -> None | DataFrame:
+
     
     """
     Informative method
@@ -53,6 +59,7 @@ def getNullInfo(
     overall_null_percentage = round((null_total * 100 ) / (df.shape[0] * df.shape[1]), 3)
 
     null_df = DataFrame(data) 
+    null_df.sort_values(by='Null percentage', inplace = True, ascending = False)
 
     if to_df:
         return null_df
@@ -197,6 +204,56 @@ def rplcNullToMode(
     return df        
 
 
+""" 
+=======================
+    OUTLIER VALUES
+=======================
+"""
+
+# --------------------------------------------------------------------
+
+def getOutlierInfo(
+        df : DataFrame,
+        z : int = 2,
+        to_df : bool = False
+    ) -> None | DataFrame:
+
+    # Outliers total values per column
+    # Outliers percentage per column
+    # Outliers overall percentage (total outlier records / total dataframe records)
+
+    data = {
+        'Colnames' : df.select_dtypes(include='number').columns,
+        'Outliers' : [],
+        'Percentage' : []
+    }
+
+    df_num = df[df.select_dtypes(include='number').columns]
+    total_outliers = []
+
+    for col in df_num.columns:
+        # Gets outlier indexes
+        outlier_indexes = getOutlierIndexes(df_num[col])        
+        # Adds outliers amounto to data
+        data['Outliers'].append(len(outlier_indexes))
+        # Adds outliers relative percentage to data
+        data['Percentage'].append(round((len(outlier_indexes) * 100) / df_num[col].shape[0], 3))
+        # Adds outliers to total outliers
+        total_outliers += outlier_indexes
+    
+    total_outliers = len(set(total_outliers))
+    overall_outliers_percentage = round((total_outliers * 100) / (df_num.shape[0] * df_num.shape[1]), 3)
+
+    outliers_df = DataFrame(data)
+    outliers_df.sort_values(by = 'Percentage', inplace = True, ascending = False)
+
+    if to_df:
+        return outliers_df
+
+    print (outliers_df)
+    print(f"\n Overall the total dataframe outlier percentage is {overall_outliers_percentage}")
+           
+
 # --------------------------------------------------------------------
 
 def getOutlierIndexes(
@@ -211,11 +268,11 @@ def getOutlierIndexes(
     for record in sr:
         z_index = (record - mean) / std
 
-        if abs(z_index) > z:
+        if abs(z_index) > z:            
             index_values = sr.loc[sr == record].index.tolist()
             indexes += index_values
     
-    indexes = tuple(set(indexes))
+    indexes = sorted(set(indexes))
     
     return indexes
 
@@ -294,17 +351,41 @@ def rplcOutlierToMean(
         z : int = 2    
     ) -> DataFrame:
 
+    df_num = df[df.select_dtypes(include = 'number').columns]
 
-    for col in df.columns:
+    for col in df_num.columns:
+        mean = df[col].mean()
+        df[col] = df[col].astype('float64')
+        indexes = getOutlierIndexes(df[col], z = z)
 
-        if df[col].dtype in ('int64', 'float64'):
-            mean = df[col].mean()
-            df[col] = df[col].astype('float64')
-
-            indexes = getOutlierIndexes(df[col], z = z)
+        if len(indexes) > 0:
             df.loc[indexes, col] = mean
-    
+
     return df
 
 
 # --------------------------------------------------------------------
+
+def replaceOutlierToMedian(
+        df : DataFrame,
+        z : int = 2
+    ) -> DataFrame:
+    
+    df_num = df[df.select_dtypes(include = 'number').columns]
+
+    for col in df_num.columns:
+        median = df[col].median()
+        df[col] = df[col].astype('float64')
+        indexes = getOutlierIndexes(df[col], z = z)
+
+        if len(indexes) > 0:
+            df.loc[indexes, col] = median
+    
+    return df
+
+
+
+
+
+
+

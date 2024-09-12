@@ -8,7 +8,7 @@ from pandas import (
     DataFrame,
 )
 
- from sklearn.preprocessing import (
+from sklearn.preprocessing import (
     MinMaxScaler,
 )
 
